@@ -1,4 +1,4 @@
-package model
+package models
 
 type Discipline struct {
 	Id   int

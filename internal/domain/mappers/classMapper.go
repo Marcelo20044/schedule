@@ -2,13 +2,13 @@ package mappers
 
 import (
 	"schedule/internal/domain/dto"
-	"schedule/internal/domain/model"
+	"schedule/internal/domain/models"
 )
 
 type ClassMapper struct {
 }
 
-func (mapper *ClassMapper) MapToDto(class *model.Class) *dto.ClassDto {
+func (mapper *ClassMapper) MapToDto(class *models.Class) *dto.ClassDto {
 	return &dto.ClassDto{
 		Id:         class.Id,
 		ClassType:  &dto.ClassTypeDto{Id: class.ClassType.Id, Name: class.ClassType.Name},
@@ -21,21 +21,21 @@ func (mapper *ClassMapper) MapToDto(class *model.Class) *dto.ClassDto {
 	}
 }
 
-func (mapper *ClassMapper) MapToModel(class *dto.ClassDto) *model.Class {
-	return &model.Class{
+func (mapper *ClassMapper) MapToModel(class *dto.ClassDto) *models.Class {
+	return &models.Class{
 		Id:         class.Id,
-		ClassType:  &model.ClassType{Id: class.ClassType.Id, Name: class.ClassType.Name},
-		Classroom:  &model.Classroom{Id: class.Classroom.Id, Name: class.Classroom.Name},
-		Discipline: &model.Discipline{Id: class.Discipline.Id, Name: class.Discipline.Name},
-		Teacher:    &model.Person{Id: class.Teacher.Id, Name: class.Teacher.Name},
+		ClassType:  &models.ClassType{Id: class.ClassType.Id, Name: class.ClassType.Name},
+		Classroom:  &models.Classroom{Id: class.Classroom.Id, Name: class.Classroom.Name},
+		Discipline: &models.Discipline{Id: class.Discipline.Id, Name: class.Discipline.Name},
+		Teacher:    &models.Person{Id: class.Teacher.Id, Name: class.Teacher.Name},
 		Date:       class.Date,
 		StartTime:  class.StartTime,
 		EndTime:    class.EndTime,
 	}
 }
 
-func (mapper *ClassMapper) MapToCreateClassModel(class *dto.CreateClassDto) *model.CreateClass {
-	return &model.CreateClass{
+func (mapper *ClassMapper) MapToCreateClassModel(class *dto.CreateClassDto) *models.CreateClass {
+	return &models.CreateClass{
 		ClassTypeId:  class.ClassTypeId,
 		ClassroomId:  class.ClassroomId,
 		DisciplineId: class.DisciplineId,

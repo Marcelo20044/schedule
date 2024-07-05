@@ -1,4 +1,4 @@
-package model
+package models
 
 type ClassType struct {
 	Id   int
