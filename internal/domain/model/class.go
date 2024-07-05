@@ -6,12 +6,12 @@ import (
 )
 
 type Class struct {
-	id         int
-	classType  *ClassType
-	classroom  *Classroom
-	discipline *Discipline
-	teacher    *Person
-	date       date.Date
-	startTime  time.Time
-	endTime    time.Time
+	Id         int
+	ClassType  *ClassType
+	Classroom  *Classroom
+	Discipline *Discipline
+	Teacher    *Person
+	Date       date.Date
+	StartTime  time.Time
+	EndTime    time.Time
 }

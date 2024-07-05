@@ -1,6 +1,6 @@
 package model
 
 type Classroom struct {
-	id   int
-	name string
+	Id   int
+	Name string
 }
