@@ -1,6 +1,8 @@
 package model
 
 type Group struct {
-	id     int
-	number string
+	Id       int
+	Number   string
+	Students []*Person
+	Classes  []*Class
 }
