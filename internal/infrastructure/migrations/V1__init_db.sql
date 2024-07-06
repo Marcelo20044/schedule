@@ -74,14 +74,16 @@ create table if not exists schedule.classes
     end_time      time    not null
 );
 
-create table if not exists schedule.classes_groups
+create table schedule.classes_groups
 (
     class_id integer not null
         constraint classes_groups__classes_fk
-            references schedule.classes,
+            references schedule.classes
+            on delete cascade,
     group_id integer not null
         constraint classes_groups__groups_fk
-            references schedule.groups,
+            references schedule.groups
+            on delete cascade,
     constraint classes_groups_pk
         primary key (group_id, class_id)
 );

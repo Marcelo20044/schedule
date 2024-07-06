@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/rickb777/date"
 	"time"
 )
 
@@ -11,7 +10,7 @@ type Class struct {
 	Classroom  *Classroom
 	Discipline *Discipline
 	Teacher    *Person
-	Date       date.Date
+	Date       time.Time
 	StartTime  time.Time
 	EndTime    time.Time
 }

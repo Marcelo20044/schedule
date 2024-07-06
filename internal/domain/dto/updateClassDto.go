@@ -1,16 +1,14 @@
-package models
+package dto
 
-import (
-	"github.com/rickb777/date"
-	"time"
-)
+import "time"
 
-type CreateClass struct {
+type UpdateClassDto struct {
+	Id           int
 	ClassTypeId  int
 	ClassroomId  int
 	DisciplineId int
 	TeacherId    int
-	Date         date.Date
+	Date         time.Time
 	StartTime    time.Time
 	EndTime      time.Time
 }
