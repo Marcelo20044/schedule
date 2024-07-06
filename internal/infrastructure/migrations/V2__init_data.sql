@@ -20,4 +20,4 @@ INSERT INTO schedule.classrooms (name) VALUES ('Ауд. 2334, Кронверкс
 
 INSERT INTO schedule.classes (type_id, classroom_id, discipline_id, teacher_id, date, start_time, end_time) VALUES (3, 1, 1, 100002, '2024-07-05', '18:40:00', '20:10:00');
 
-INSERT INTO schedule.classes_groups (class_id, group_id) VALUES (2, 1);
+INSERT INTO schedule.classes_groups (class_id, group_id) VALUES (1, 1);

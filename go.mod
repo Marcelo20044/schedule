@@ -2,7 +2,11 @@ module schedule
 
 go 1.22
 
-require github.com/ilyakaznacheev/cleanenv v1.5.0
+require (
+	github.com/gorilla/mux v1.8.1
+	github.com/ilyakaznacheev/cleanenv v1.5.0
+	github.com/rickb777/date v1.20.6
+)
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
