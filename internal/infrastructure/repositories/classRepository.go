@@ -1,172 +1,141 @@
 package repositories
 
 import (
-	"database/sql"
+	"github.com/jmoiron/sqlx"
 	"schedule/internal/domain/models"
 )
 
 type ClassRepository struct {
-	db *sql.DB
+	Db *sqlx.DB
 }
 
-func NewClassRepository(db *sql.DB) *ClassRepository {
-	return &ClassRepository{db: db}
+func NewClassRepository(db *sqlx.DB) *ClassRepository {
+	return &ClassRepository{Db: db}
 }
 
-func (r *ClassRepository) GetClassById(classId int) (*models.Class, error) {
+func (repository *ClassRepository) GetClassById(classId int) (*models.Class, error) {
 	query := `
-	SELECT 
-		c.id, 
-		ct.id, ct.name, 
-		cr.id, cr.name, 
-		d.id, d.name, 
-		p.id, p.name, 
-		c.date, c.start_time, c.end_time 
-	FROM schedule.classes c
-	INNER JOIN schedule.class_type ct ON c.type_id = ct.id
-	LEFT JOIN schedule.classrooms cr ON c.classroom_id = cr.id
-	INNER JOIN schedule.disciplines d ON c.discipline_id = d.id
-	LEFT JOIN schedule.persons p ON c.teacher_id = p.id
-	WHERE c.id = $1`
-
-	row := r.db.QueryRow(query, classId)
-
-	var class models.Class
-	var classType models.ClassType
-	var classroom models.Classroom
-	var discipline models.Discipline
-	var teacher models.Person
-
-	err := row.Scan(
-		&class.Id,
-		&classType.Id, &classType.Name,
-		&classroom.Id, &classroom.Name,
-		&discipline.Id, &discipline.Name,
-		&teacher.Id, &teacher.Name,
-		&class.Date, &class.StartTime, &class.EndTime,
-	)
+	SELECT cl.id        as id,
+		   cl.date,
+		   cl.start_time,
+		   cl.end_time,
+		   ct.id        as class_typ_id,
+		   ct.name      as class_type_name,
+		   c.id         as classroom_id,
+		   c.name       as classroom_name,
+		   d.id         as discipline_id,
+		   d.name       as discipline_name,
+		   p.id   		as person_id,
+		   p.name 		as person_name
+	FROM schedule.classes cl
+			 join schedule.class_type ct on ct.id = cl.type_id
+			 join schedule.classrooms c on c.id = cl.classroom_id
+			 join schedule.disciplines d on d.id = cl.discipline_id
+			 join schedule.persons p on p.id = cl.teacher_id
+	WHERE cl.id = $1
+	`
+	rawClass := new(models.RawClass)
+	err := repository.Db.Get(rawClass, query, classId)
 	if err != nil {
 		return nil, err
 	}
 
-	class.ClassType = &classType
-	class.Classroom = &classroom
-	class.Discipline = &discipline
-	class.Teacher = &teacher
-
-	return &class, nil
+	return rawClass.MapToClass(), nil
 }
 
-func (r *ClassRepository) GetAllClassesByPerson(personId int) ([]*models.Class, error) {
+func (repository *ClassRepository) GetAllClassesByPerson(personId int) ([]*models.Class, error) {
 	query := `
-	SELECT 
-		c.id, 
-		ct.id, ct.name, 
-		cr.id, cr.name, 
-		d.id, d.name, 
-		p.id, p.name, 
-		c.date, c.start_time, c.end_time 
-	FROM schedule.classes c
-	INNER JOIN schedule.classes_groups cg ON c.id = cg.class_id
-	INNER JOIN schedule.persons_groups pg ON cg.group_id = pg.group_id
-	INNER JOIN schedule.class_type ct ON c.type_id = ct.id
-	LEFT JOIN schedule.classrooms cr ON c.classroom_id = cr.id
-	INNER JOIN schedule.disciplines d ON c.discipline_id = d.id
-	LEFT JOIN schedule.persons p ON c.teacher_id = p.id
-	WHERE pg.person_id = $1`
-
-	rows, err := r.db.Query(query, personId)
+	SELECT cl.id        as id,
+		   cl.date,
+		   cl.start_time,
+		   cl.end_time,
+		   ct.id        as class_typ_id,
+		   ct.name      as class_type_name,
+		   c.id         as classroom_id,
+		   c.name       as classroom_name,
+		   d.id         as discipline_id,
+		   d.name       as discipline_name,
+		   p.id   		as person_id,
+		   p.name 		as person_name
+	FROM schedule.classes cl
+			 join schedule.classes_groups cg on cg.class_id = cl.id
+			 join schedule.groups g on g.id = cg.group_id
+			 join schedule.persons_groups pg on pg.group_id = g.id
+			 join schedule.class_type ct on ct.id = cl.type_id
+			 join schedule.classrooms c on c.id = cl.classroom_id
+			 join schedule.disciplines d on d.id = cl.discipline_id
+			 join schedule.persons p on p.id = cl.teacher_id
+	WHERE pg.person_id = $1
+	`
+	var rawClasses []*models.RawClass
+	err := repository.Db.Select(&rawClasses, query, personId)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
 	var classes []*models.Class
-	for rows.Next() {
-		var class models.Class
-		var classType models.ClassType
-		var classroom models.Classroom
-		var discipline models.Discipline
-		var teacher models.Person
-
-		err := rows.Scan(
-			&class.Id,
-			&classType.Id, &classType.Name,
-			&classroom.Id, &classroom.Name,
-			&discipline.Id, &discipline.Name,
-			&teacher.Id, &teacher.Name,
-			&class.Date, &class.StartTime, &class.EndTime,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		class.ClassType = &classType
-		class.Classroom = &classroom
-		class.Discipline = &discipline
-		class.Teacher = &teacher
-
-		classes = append(classes, &class)
+	for _, rawClass := range rawClasses {
+		classes = append(classes, rawClass.MapToClass())
 	}
 
 	return classes, nil
 }
 
-func (r *ClassRepository) CreateClass(class *models.CreateClass) (*models.Class, error) {
+func (repository *ClassRepository) CreateClass(class *models.CreateClass) (*models.Class, error) {
 	query := `
-	INSERT INTO schedule.classes (type_id, classroom_id, discipline_id, teacher_id, date, start_time, end_time) 
-	VALUES ($1, $2, $3, $4, $5, $6, $7) 
-	RETURNING id`
+    INSERT INTO schedule.classes (type_id, classroom_id, discipline_id, teacher_id, date, start_time, end_time)
+    VALUES (:type_id, :classroom_id, :discipline_id, :teacher_id, :date, :start_time, :end_time)
+    RETURNING id
+    `
+	stmt, err := repository.Db.PrepareNamed(query)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
 
-	row := r.db.QueryRow(query, class.ClassTypeId, class.ClassroomId, class.DisciplineId, class.TeacherId, class.Date, class.StartTime, class.EndTime)
-
-	var createdClass models.Class
-	err := row.Scan(&createdClass.Id)
+	var id int
+	err = stmt.Get(&id, class)
 	if err != nil {
 		return nil, err
 	}
 
-	createdClass.ClassType = &models.ClassType{Id: class.ClassTypeId}
-	createdClass.Classroom = &models.Classroom{Id: class.ClassroomId}
-	createdClass.Discipline = &models.Discipline{Id: class.DisciplineId}
-	createdClass.Teacher = &models.Person{Id: class.TeacherId}
-	createdClass.Date = class.Date
-	createdClass.StartTime = class.StartTime
-	createdClass.EndTime = class.EndTime
-
-	return &createdClass, nil
+	return repository.GetClassById(id)
 }
 
-func (r *ClassRepository) UpdateClass(class *models.Class) error {
+func (repository *ClassRepository) UpdateClass(class *models.UpdateClass) error {
 	query := `
-	UPDATE schedule.classes 
-	SET type_id = $1, classroom_id = $2, discipline_id = $3, teacher_id = $4, date = $5, start_time = $6, end_time = $7 
-	WHERE id = $8`
-	_, err := r.db.Exec(query, class.ClassType.Id, class.Classroom.Id, class.Discipline.Id, class.Teacher.Id, class.Date, class.StartTime, class.EndTime, class.Id)
+    UPDATE schedule.classes
+    SET 
+        type_id = :type_id,
+        classroom_id = :classroom_id,
+        discipline_id = :discipline_id,
+        teacher_id = :teacher_id,
+        date = :date,
+        start_time = :start_time,
+        end_time = :end_time
+    WHERE id = :id
+    `
+	stmt, err := repository.Db.PrepareNamed(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(class)
 	return err
 }
 
-func (r *ClassRepository) DeleteClass(classId int) error {
-	query := "DELETE FROM schedule.classes WHERE id = $1"
-	_, err := r.db.Exec(query, classId)
-	return err
-}
-
-func (r *ClassRepository) SignUp(classId int, personId int) error {
+func (repository *ClassRepository) DeleteClass(classId int) error {
 	query := `
-	INSERT INTO schedule.persons_groups (person_id, group_id) 
-	SELECT $1, group_id 
-	FROM schedule.classes_groups 
-	WHERE class_id = $2`
-	_, err := r.db.Exec(query, personId, classId)
-	return err
-}
+    DELETE FROM schedule.classes
+    WHERE id = $1
+    `
+	stmt, err := repository.Db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
 
-func (r *ClassRepository) SignOut(classId int, personId int) error {
-	query := `
-	DELETE FROM schedule.persons_groups 
-	WHERE person_id = $1 
-	AND group_id IN (SELECT group_id FROM schedule.classes_groups WHERE class_id = $2)`
-	_, err := r.db.Exec(query, personId, classId)
+	_, err = stmt.Exec(classId)
 	return err
 }

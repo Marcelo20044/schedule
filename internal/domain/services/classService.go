@@ -1,62 +1,58 @@
 package services
 
 import (
-	"schedule/internal/domain/abstraction/repositories"
+	"schedule/internal/domain/abstraction"
 	"schedule/internal/domain/dto"
+	"schedule/internal/domain/exceptions"
 	"schedule/internal/domain/mappers"
 )
 
 type ClassService struct {
-	repository repositories.ClassRepositoryInterface
-	mapper     mappers.ClassMapper
+	Repository abstraction.ClassRepositoryInterface
+	Mapper     *mappers.ClassMapper
 }
 
-func NewClassService(repository repositories.ClassRepositoryInterface, mapper mappers.ClassMapper) *ClassService {
-	return &ClassService{repository: repository, mapper: mapper}
+func NewClassService(repository abstraction.ClassRepositoryInterface, mapper *mappers.ClassMapper) *ClassService {
+	return &ClassService{Repository: repository, Mapper: mapper}
 }
 
 func (service *ClassService) GetClassById(id int) (*dto.ClassDto, error) {
-	class, err := service.repository.GetClassById(id)
-	if err != nil {
-		return nil, err
+	class, err := service.Repository.GetClassById(id)
+
+	if err != nil && err.Error() == "sql: no rows in result set" {
+		return nil, exceptions.NewClassNotFoundError(id)
 	}
-	return service.mapper.MapToDto(class), nil
+
+	return service.Mapper.MapToDto(class), err
 }
 
 func (service *ClassService) GetAllClassesByPerson(personId int) ([]*dto.ClassDto, error) {
-	classes, err := service.repository.GetAllClassesByPerson(personId)
-	if err != nil {
-		return nil, err
+	classes, err := service.Repository.GetAllClassesByPerson(personId)
+
+	if len(classes) == 0 {
+		return nil, exceptions.NewClassesForPersonNotFoundError()
 	}
 
 	classDto := make([]*dto.ClassDto, len(classes))
 	for i, class := range classes {
-		classDto[i] = service.mapper.MapToDto(class)
+		classDto[i] = service.Mapper.MapToDto(class)
 	}
 
-	return classDto, nil
+	return classDto, err
 }
 
 func (service *ClassService) CreateClass(class *dto.CreateClassDto) (*dto.ClassDto, error) {
-	createdClass, err := service.repository.CreateClass(service.mapper.MapToCreateClassModel(class))
+	createdClass, err := service.Repository.CreateClass(service.Mapper.MapToCreateClassModel(class))
 	if err != nil {
 		return nil, err
 	}
-	return service.mapper.MapToDto(createdClass), nil
+	return service.Mapper.MapToDto(createdClass), nil
 }
 
-func (service *ClassService) UpdateClass(class *dto.ClassDto) error {
-	return service.repository.UpdateClass(service.mapper.MapToModel(class))
+func (service *ClassService) UpdateClass(class *dto.UpdateClassDto) error {
+	return service.Repository.UpdateClass(service.Mapper.MapToUpdateClassModel(class))
 }
 
 func (service *ClassService) DeleteClass(id int) error {
-	return service.repository.DeleteClass(id)
-}
-
-func (service *ClassService) SignUp(signUpDto dto.SignUpDto) error {
-	return service.repository.SignUp(signUpDto.ClassId, signUpDto.PersonId)
-}
-
-func (service *ClassService) SignOut(signUpDto dto.SignUpDto) error {
-	return service.repository.SignOut(signUpDto.ClassId, signUpDto.PersonId)
+	return service.Repository.DeleteClass(id)
 }
