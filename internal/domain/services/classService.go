@@ -3,8 +3,8 @@ package services
 import (
 	"schedule/internal/domain/abstraction"
 	"schedule/internal/domain/dto"
+	"schedule/internal/domain/exceptions"
 	"schedule/internal/domain/mappers"
-	"schedule/internal/exceptions"
 )
 
 type ClassService struct {
