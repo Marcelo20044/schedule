@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"github.com/rickb777/date"
 	"time"
 )
 
@@ -10,7 +9,7 @@ type CreateClassDto struct {
 	ClassroomId  int
 	DisciplineId int
 	TeacherId    int
-	Date         date.Date
+	Date         time.Time
 	StartTime    time.Time
 	EndTime      time.Time
 }

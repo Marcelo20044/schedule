@@ -8,6 +8,10 @@ import (
 type ClassMapper struct {
 }
 
+func NewClassMapper() *ClassMapper {
+	return &ClassMapper{}
+}
+
 func (mapper *ClassMapper) MapToDto(class *models.Class) *dto.ClassDto {
 	return &dto.ClassDto{
 		Id:         class.Id,
@@ -36,6 +40,19 @@ func (mapper *ClassMapper) MapToModel(class *dto.ClassDto) *models.Class {
 
 func (mapper *ClassMapper) MapToCreateClassModel(class *dto.CreateClassDto) *models.CreateClass {
 	return &models.CreateClass{
+		ClassTypeId:  class.ClassTypeId,
+		ClassroomId:  class.ClassroomId,
+		DisciplineId: class.DisciplineId,
+		TeacherId:    class.TeacherId,
+		Date:         class.Date,
+		StartTime:    class.StartTime,
+		EndTime:      class.EndTime,
+	}
+}
+
+func (mapper *ClassMapper) MapToUpdateClassModel(class *dto.UpdateClassDto) *models.UpdateClass {
+	return &models.UpdateClass{
+		Id:           class.Id,
 		ClassTypeId:  class.ClassTypeId,
 		ClassroomId:  class.ClassroomId,
 		DisciplineId: class.DisciplineId,
