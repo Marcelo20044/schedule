@@ -27,6 +27,11 @@ func (service *ClassService) GetClassById(id int) (*dto.ClassDto, error) {
 		return nil, exceptions.NewClassNotFoundError(id)
 	}
 
+	err = service.Producer.SendMessage("classes", fmt.Sprintf("Class getted: %v", class.Id))
+	if err != nil {
+		log.Printf("Failed to send message to Kafka: %v", err)
+	}
+
 	return service.Mapper.MapToDto(class), err
 }
 

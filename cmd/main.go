@@ -13,7 +13,7 @@ import (
 	"schedule/internal/domain/services"
 	"schedule/internal/infrastructure/repositories"
 	"schedule/internal/kafka"
-	"schedule/internal/presentation/api/routes"
+	"schedule/internal/presentation/api/controllers"
 	"schedule/internal/presentation/utils"
 )
 
@@ -44,11 +44,12 @@ func main() {
 	classMapper := mappers.NewClassMapper()
 	producer, err := kafka.NewProducer(brokers)
 	classService := services.NewClassService(classRepository, classMapper, producer)
-	err = classService.DeleteClass(5)
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
-	routes.SetupRoutes(router, classService)
+	//err = classService.DeleteClass(5)
+	//if err != nil {
+	//	log.Fatalf(err.Error())
+	//}
+	controller := controllers.NewClassController(classService)
+	controller.SetupRoutes(router, classService)
 	router.Use(utils.Recovery)
 	log.Fatal(http.ListenAndServe(":1337", router))
 }

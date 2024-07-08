@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"net/http"
 	"schedule/internal/domain/dto"
 	"schedule/internal/domain/services"
@@ -9,7 +10,15 @@ import (
 	"strconv"
 )
 
-var GeClassById = func(w http.ResponseWriter, r *http.Request, classService *services.ClassService) {
+type ClassController struct {
+	service *services.ClassService
+}
+
+func NewClassController(classService *services.ClassService) *ClassController {
+	return &ClassController{service: classService}
+}
+
+func (controller *ClassController) GetClassById(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -17,7 +26,7 @@ var GeClassById = func(w http.ResponseWriter, r *http.Request, classService *ser
 		return
 	}
 
-	class, err := classService.GetClassById(id)
+	class, err := controller.service.GetClassById(id)
 	if err != nil {
 		utils.Response(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -26,7 +35,7 @@ var GeClassById = func(w http.ResponseWriter, r *http.Request, classService *ser
 	utils.Response(w, class, http.StatusOK)
 }
 
-var GetAllClassesByPerson = func(w http.ResponseWriter, r *http.Request, classService *services.ClassService) {
+func (controller *ClassController) GetAllClassesByPerson(w http.ResponseWriter, r *http.Request) {
 	personIdStr := r.URL.Query().Get("personId")
 	personId, err := strconv.Atoi(personIdStr)
 	if err != nil {
@@ -34,7 +43,7 @@ var GetAllClassesByPerson = func(w http.ResponseWriter, r *http.Request, classSe
 		return
 	}
 
-	classes, err := classService.GetAllClassesByPerson(personId)
+	classes, err := controller.service.GetAllClassesByPerson(personId)
 	if err != nil {
 		utils.Response(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -43,7 +52,7 @@ var GetAllClassesByPerson = func(w http.ResponseWriter, r *http.Request, classSe
 	utils.Response(w, classes, http.StatusOK)
 }
 
-var CreateClass = func(w http.ResponseWriter, r *http.Request, classService *services.ClassService) {
+func (controller *ClassController) CreateClass(w http.ResponseWriter, r *http.Request) {
 	var createClassDto dto.CreateClassDto
 	err := json.NewDecoder(r.Body).Decode(&createClassDto)
 	if err != nil {
@@ -51,7 +60,7 @@ var CreateClass = func(w http.ResponseWriter, r *http.Request, classService *ser
 		return
 	}
 
-	class, err := classService.CreateClass(&createClassDto)
+	class, err := controller.service.CreateClass(&createClassDto)
 	if err != nil {
 		utils.Response(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -60,7 +69,7 @@ var CreateClass = func(w http.ResponseWriter, r *http.Request, classService *ser
 	utils.Response(w, class, http.StatusOK)
 }
 
-var UpdateClass = func(w http.ResponseWriter, r *http.Request, classService *services.ClassService) {
+func (controller *ClassController) UpdateClass(w http.ResponseWriter, r *http.Request) {
 	var classDto dto.UpdateClassDto
 	err := json.NewDecoder(r.Body).Decode(&classDto)
 	if err != nil {
@@ -68,7 +77,7 @@ var UpdateClass = func(w http.ResponseWriter, r *http.Request, classService *ser
 		return
 	}
 
-	err = classService.UpdateClass(&classDto)
+	err = controller.service.UpdateClass(&classDto)
 	if err != nil {
 		utils.Response(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -77,7 +86,7 @@ var UpdateClass = func(w http.ResponseWriter, r *http.Request, classService *ser
 	utils.Response(w, "Class updated successfully", http.StatusOK)
 }
 
-var DeleteClass = func(w http.ResponseWriter, r *http.Request, classService *services.ClassService) {
+func (controller *ClassController) DeleteClass(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -85,11 +94,33 @@ var DeleteClass = func(w http.ResponseWriter, r *http.Request, classService *ser
 		return
 	}
 
-	err = classService.DeleteClass(id)
+	err = controller.service.DeleteClass(id)
 	if err != nil {
 		utils.Response(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	utils.Response(w, "Class deleted successfully", http.StatusOK)
+}
+
+func (controller *ClassController) SetupRoutes(router *mux.Router, classService *services.ClassService) {
+	router.HandleFunc("/classes", func(w http.ResponseWriter, r *http.Request) {
+		controller.GetClassById(w, r)
+	}).Methods("GET")
+
+	router.HandleFunc("/persons/classes", func(w http.ResponseWriter, r *http.Request) {
+		controller.GetAllClassesByPerson(w, r)
+	}).Methods("GET")
+
+	router.HandleFunc("/classes", func(w http.ResponseWriter, r *http.Request) {
+		controller.CreateClass(w, r)
+	}).Methods("POST")
+
+	router.HandleFunc("/classes", func(w http.ResponseWriter, r *http.Request) {
+		controller.UpdateClass(w, r)
+	}).Methods("PUT")
+
+	router.HandleFunc("/classes", func(w http.ResponseWriter, r *http.Request) {
+		controller.DeleteClass(w, r)
+	}).Methods("DELETE")
 }
