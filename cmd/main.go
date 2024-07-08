@@ -14,6 +14,7 @@ import (
 	"schedule/internal/infrastructure/repositories"
 	"schedule/internal/kafka"
 	"schedule/internal/presentation/api/routes"
+	"schedule/internal/presentation/utils"
 )
 
 func main() {
@@ -50,4 +51,5 @@ func main() {
 	producer, err := kafka.NewProducer(brokers)
 	classService := services.NewClassService(classRepository, classMapper, producer)
 	routes.SetupRoutes(router, classService)
+	router.Use(utils.Recovery)
 }
