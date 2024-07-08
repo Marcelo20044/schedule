@@ -13,6 +13,7 @@ import (
 	"schedule/internal/infrastructure/repositories"
 	"schedule/internal/kafka"
 	"schedule/internal/presentation/api/routes"
+	"schedule/internal/presentation/utils"
 )
 
 func main() {
@@ -47,4 +48,5 @@ func main() {
 		log.Fatalf(err.Error())
 	}
 	routes.SetupRoutes(router, classService)
+	router.Use(utils.Recovery)
 }
