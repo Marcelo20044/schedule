@@ -28,12 +28,4 @@ func SetupRoutes(router *mux.Router, classService *services.ClassService) {
 		controllers.DeleteClass(w, r, classService)
 	}).Methods("DELETE")
 
-	router.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
-		controllers.SignUp(w, r, classService)
-	}).Methods("POST")
-
-	router.HandleFunc("/signout", func(w http.ResponseWriter, r *http.Request) {
-		controllers.SignOut(w, r, classService)
-	}).Methods("POST")
-
 }
