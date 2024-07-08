@@ -31,7 +31,7 @@ func main() {
 		log.Fatal(er)
 	}
 
-	brokers := []string{"localhost:1337"}
+	brokers := []string{"localhost:9092"}
 	consumer, err := kafka.NewConsumer(brokers)
 	if err != nil {
 		log.Fatalf("Failed to start consumer: %v", err)
