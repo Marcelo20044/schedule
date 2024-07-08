@@ -61,7 +61,7 @@ var CreateClass = func(w http.ResponseWriter, r *http.Request, classService *ser
 }
 
 var UpdateClass = func(w http.ResponseWriter, r *http.Request, classService *services.ClassService) {
-	var classDto dto.ClassDto
+	var classDto dto.UpdateClassDto
 	err := json.NewDecoder(r.Body).Decode(&classDto)
 	if err != nil {
 		utils.Response(w, "Invalid request payload", http.StatusBadRequest)
@@ -92,38 +92,4 @@ var DeleteClass = func(w http.ResponseWriter, r *http.Request, classService *ser
 	}
 
 	utils.Response(w, "Class deleted successfully", http.StatusOK)
-}
-
-var SignUp = func(w http.ResponseWriter, r *http.Request, classService *services.ClassService) {
-	var signUpDto dto.SignUpDto
-	err := json.NewDecoder(r.Body).Decode(&signUpDto)
-	if err != nil {
-		utils.Response(w, "Invalid request payload", http.StatusBadRequest)
-		return
-	}
-
-	err = classService.SignUp(signUpDto)
-	if err != nil {
-		utils.Response(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	utils.Response(w, "Signed up successfully", http.StatusOK)
-}
-
-var SignOut = func(w http.ResponseWriter, r *http.Request, classService *services.ClassService) {
-	var signOutDto dto.SignUpDto
-	err := json.NewDecoder(r.Body).Decode(&signOutDto)
-	if err != nil {
-		utils.Response(w, "Invalid request payload", http.StatusBadRequest)
-		return
-	}
-
-	err = classService.SignOut(signOutDto)
-	if err != nil {
-		utils.Response(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	utils.Response(w, "Signed out successfully", http.StatusOK)
 }
