@@ -7,6 +7,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"log"
+	"net/http"
 	"schedule/internal/config"
 	"schedule/internal/domain/mappers"
 	"schedule/internal/domain/services"
@@ -49,4 +50,5 @@ func main() {
 	}
 	routes.SetupRoutes(router, classService)
 	router.Use(utils.Recovery)
+	log.Fatal(http.ListenAndServe(":1337", router))
 }
