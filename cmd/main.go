@@ -8,7 +8,6 @@ import (
 	_ "github.com/lib/pq"
 	"log"
 	"schedule/internal/config"
-	"schedule/internal/domain/dto"
 	"schedule/internal/domain/mappers"
 	"schedule/internal/domain/services"
 	"schedule/internal/infrastructure/repositories"
@@ -23,12 +22,6 @@ func main() {
 	db, err := sqlx.Connect("postgres", "dbname=schedule sslmode=disable")
 	if err != nil {
 		log.Fatalln(err)
-	}
-	var repository = repositories.NewGroupRepository(db)
-	var service = services.NewGroupService(repository)
-	var er = service.RemoveClassFromGroup(&dto.RemoveClassFromGroup{ClassId: 5, GroupId: 1})
-	if er != nil {
-		log.Fatal(er)
 	}
 
 	brokers := []string{"localhost:9092"}
@@ -49,5 +42,9 @@ func main() {
 	classMapper := mappers.NewClassMapper()
 	producer, err := kafka.NewProducer(brokers)
 	classService := services.NewClassService(classRepository, classMapper, producer)
+	err = classService.DeleteClass(5)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
 	routes.SetupRoutes(router, classService)
 }
