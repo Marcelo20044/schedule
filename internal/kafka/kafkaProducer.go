@@ -1,10 +1,10 @@
 package kafka
 
 import (
+	"encoding/json"
+	"github.com/Shopify/sarama"
 	"log"
 	"time"
-
-	"github.com/Shopify/sarama"
 )
 
 type Producer struct {
@@ -25,14 +25,19 @@ func NewProducer(brokers []string) (*Producer, error) {
 	return &Producer{producer: producer}, nil
 }
 
-func (p *Producer) SendMessage(topic, message string) error {
+func (p *Producer) SendMessage(topic string, message interface{}) error {
+	value, err := json.Marshal(message)
+	if err != nil {
+		return err
+	}
+
 	msg := &sarama.ProducerMessage{
 		Topic:     topic,
-		Value:     sarama.StringEncoder(message),
+		Value:     sarama.ByteEncoder(value),
 		Timestamp: time.Now(),
 	}
 
-	_, _, err := p.producer.SendMessage(msg)
+	_, _, err = p.producer.SendMessage(msg)
 	if err != nil {
 		log.Printf("Failed to send message to Kafka: %v", err)
 		return err

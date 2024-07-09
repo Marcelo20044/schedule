@@ -19,7 +19,8 @@ func NewClassController(classService *services.ClassService) *ClassController {
 }
 
 func (controller *ClassController) GetClassById(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
+	vars := mux.Vars(r)
+	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		utils.Response(w, "Invalid class ID", http.StatusBadRequest)
@@ -36,7 +37,8 @@ func (controller *ClassController) GetClassById(w http.ResponseWriter, r *http.R
 }
 
 func (controller *ClassController) GetAllClassesByPerson(w http.ResponseWriter, r *http.Request) {
-	personIdStr := r.URL.Query().Get("personId")
+	vars := mux.Vars(r)
+	personIdStr := vars["id"]
 	personId, err := strconv.Atoi(personIdStr)
 	if err != nil {
 		utils.Response(w, "Invalid person ID", http.StatusBadRequest)
@@ -87,7 +89,8 @@ func (controller *ClassController) UpdateClass(w http.ResponseWriter, r *http.Re
 }
 
 func (controller *ClassController) DeleteClass(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
+	vars := mux.Vars(r)
+	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		utils.Response(w, "Invalid class ID", http.StatusBadRequest)
@@ -103,12 +106,12 @@ func (controller *ClassController) DeleteClass(w http.ResponseWriter, r *http.Re
 	utils.Response(w, "Class deleted successfully", http.StatusOK)
 }
 
-func (controller *ClassController) SetupRoutes(router *mux.Router, classService *services.ClassService) {
-	router.HandleFunc("/classes", func(w http.ResponseWriter, r *http.Request) {
+func (controller *ClassController) SetupClassRoutes(router *mux.Router, classService *services.ClassService) {
+	router.HandleFunc("/classes/{id}", func(w http.ResponseWriter, r *http.Request) {
 		controller.GetClassById(w, r)
 	}).Methods("GET")
 
-	router.HandleFunc("/persons/classes", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/persons/{id}/classes", func(w http.ResponseWriter, r *http.Request) {
 		controller.GetAllClassesByPerson(w, r)
 	}).Methods("GET")
 
@@ -120,7 +123,7 @@ func (controller *ClassController) SetupRoutes(router *mux.Router, classService 
 		controller.UpdateClass(w, r)
 	}).Methods("PUT")
 
-	router.HandleFunc("/classes", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/classes/{id}", func(w http.ResponseWriter, r *http.Request) {
 		controller.DeleteClass(w, r)
 	}).Methods("DELETE")
 }
