@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -59,7 +58,7 @@ func Init() {
 	router := mux.NewRouter()
 	router.Use(utils.Recovery)
 	classController := controllers.NewClassController(classService, userService)
-	groupController := controllers.NewGroupController(producer)
+	groupController := controllers.NewGroupController(producer, cfg.GroupsTopic)
 	classController.SetupRoutes(router)
 	groupController.SetupRoutes(router)
 

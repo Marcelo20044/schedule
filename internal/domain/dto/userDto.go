@@ -1,6 +1,6 @@
 package dto
 
 type UserDto struct {
-	Id       int
-	Username string
+	Id       int    `json:"id"`
+	Username string `json:"username"`
 }
