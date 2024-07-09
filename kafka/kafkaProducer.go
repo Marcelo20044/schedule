@@ -42,6 +42,6 @@ func (p *Producer) SendMessage(topic string, message interface{}) error {
 		log.Printf("Failed to send message to Kafka: %v", err)
 		return err
 	}
-	log.Printf("Message sent to Kafka topic %s: %s", topic, message)
+	log.Printf("Message sent to Kafka topic %s: %s", topic, value)
 	return nil
 }
