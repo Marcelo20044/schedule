@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/Shopify/sarama"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	"log"
@@ -11,7 +10,6 @@ import (
 	"schedule/internal/domain/mappers"
 	"schedule/internal/domain/services"
 	"schedule/internal/infrastructure/repositories"
-	"schedule/internal/kafka"
 	"schedule/internal/presentation/api/controllers"
 	"schedule/internal/presentation/utils"
 )
@@ -27,21 +25,10 @@ func Init() {
 
 	// Init Kafka
 	brokers := []string{fmt.Sprintf("%s:%s", cfg.Kafka.Host, cfg.Kafka.Port)}
-	consumer, err := kafka.NewConsumer(brokers)
-	if err != nil {
-		log.Fatalf("Failed to start consumer: %v", err)
-	}
-
-	err = consumer.Consume("classes", func(message *sarama.ConsumerMessage) {
-		log.Printf("Received message: %s", string(message.Value))
-	})
-	if err != nil {
-		log.Fatalf("Failed to consume messages: %v", err)
-	}
 
 	// Init repositories
 	classRepository := repositories.NewClassRepository(db)
-	//groupRepository := repositories.NewGroupRepository(db)
+	groupRepository := repositories.NewGroupRepository(db)
 	userRepository := repositories.NewUserRepository(db)
 
 	// Init mappers
@@ -50,13 +37,16 @@ func Init() {
 
 	// Init services
 	classService := services.NewClassService(classRepository, classMapper)
-	//groupService := services.NewGroupService(groupRepository)
+	groupService := services.NewGroupService(groupRepository, brokers)
+	groupService.StartConsuming()
 	userService := services.NewUserService(userRepository, userMapper)
 
 	// Init controllers
 	router := mux.NewRouter()
 	classController := controllers.NewClassController(classService, userService)
+	groupController := controllers.NewGroupController()
 	classController.SetupRoutes(router)
+	groupController.SetupGroupRoutes(router)
 	router.Use(utils.Recovery)
 	log.Printf("Running on http://%s:%s", cfg.Server.Host, cfg.Server.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", cfg.Server.Port), router))

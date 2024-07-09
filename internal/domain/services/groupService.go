@@ -14,8 +14,7 @@ type GroupService struct {
 	Consumer   *kafka.Consumer
 }
 
-func NewGroupService(repository abstraction.GroupRepositoryInterface) *GroupService {
-	brokers := []string{"localhost:9092"}
+func NewGroupService(repository abstraction.GroupRepositoryInterface, brokers []string) *GroupService {
 	consumer, err := kafka.NewConsumer(brokers)
 	if err != nil {
 		log.Fatalf("Failed to start consumer: %v", err)
