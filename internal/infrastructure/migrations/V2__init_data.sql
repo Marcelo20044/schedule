@@ -21,3 +21,14 @@ INSERT INTO schedule.classrooms (name) VALUES ('Ауд. 2334, Кронверкс
 INSERT INTO schedule.classes (type_id, classroom_id, discipline_id, teacher_id, date, start_time, end_time) VALUES (3, 1, 1, 100002, '2024-07-05', '18:40:00', '20:10:00');
 
 INSERT INTO schedule.classes_groups (class_id, group_id) VALUES (1, 1);
+
+INSERT INTO schedule.users (id, username, password) VALUES (100000, 'marcelo', '$2a$10$pVKXigIzE6YINjYzgs5wQOJndKk7ApQwJbgp5esY9w7sMfjEOM08i');
+INSERT INTO schedule.users (id, username, password) VALUES (100001, 'gafurik', '$2a$10$pVKXigIzE6YINjYzgs5wQOJndKk7ApQwJbgp5esY9w7sMfjEOM08i');
+INSERT INTO schedule.users (id, username, password) VALUES (100002, 'butenko_or', '$2a$10$pVKXigIzE6YINjYzgs5wQOJndKk7ApQwJbgp5esY9w7sMfjEOM08i');
+
+INSERT INTO schedule.roles (name) VALUES ('ROLE_USER');
+INSERT INTO schedule.roles (name) VALUES ('ROLE_ADMIN');
+
+INSERT INTO schedule.users_roles (user_id, role_id) VALUES (100000, 2);
+INSERT INTO schedule.users_roles (user_id, role_id) VALUES (100001, 1);
+INSERT INTO schedule.users_roles (user_id, role_id) VALUES (100002, 1);
