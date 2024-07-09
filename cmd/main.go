@@ -25,6 +25,9 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	brokers := []string{"localhost:9092"}
 	consumer, err := kafka.NewConsumer(brokers)
@@ -41,15 +44,20 @@ func main() {
 
 	router := mux.NewRouter()
 	classRepository := repositories.NewClassRepository(db)
+	groupRepository := repositories.NewGroupRepository(db)
 	classMapper := mappers.NewClassMapper()
 	producer, err := kafka.NewProducer(brokers)
 	classService := services.NewClassService(classRepository, classMapper, producer)
+	groupService := services.NewGroupService(groupRepository)
+	groupService.StartConsuming()
 	//err = classService.DeleteClass(5)
 	//if err != nil {
 	//	log.Fatalf(err.Error())
 	//}
-	controller := controllers.NewClassController(classService)
-	controller.SetupRoutes(router, classService)
+	classController := controllers.NewClassController(classService)
+	groupController := controllers.NewGroupController()
+	classController.SetupClassRoutes(router, classService)
+	groupController.SetupGroupRoutes(router)
 	router.Use(utils.Recovery)
 	log.Fatal(http.ListenAndServe(":1337", router))
 }
