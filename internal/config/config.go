@@ -30,8 +30,9 @@ type Db struct {
 }
 
 type Kafka struct {
-	Host string `yaml:"host" env-default:"localhost"`
-	Port string `yaml:"port" env-default:"9092"`
+	Host        string `yaml:"host" env-default:"localhost"`
+	Port        string `yaml:"port" env-default:"9092"`
+	GroupsTopic string `yaml:"groups_topic" env-default:"groups"`
 }
 
 func GetConfig() *Config {
