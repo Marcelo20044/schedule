@@ -26,41 +26,35 @@ func (listener *GroupListener) Listen(topic string) {
 
 		}
 
+		var command dto.GroupAction
+		err := mapToCommand(kafkaMessage.Data, &command)
+		if err != nil {
+			return
+		}
+
 		switch kafkaMessage.Action {
 		case "AddPersonToGroup":
-			var command dto.AddPersonToGroup
-			if err := mapToCommand(kafkaMessage.Data, &command); err == nil {
-				err := listener.Service.AddPersonToGroup(&command)
-				if err != nil {
-					return
-				}
+			err := listener.Service.AddPersonToGroup(&command)
+			if err != nil {
+				return
 			}
 
 		case "RemovePersonFromGroup":
-			var command dto.RemovePersonFromGroup
-			if err := mapToCommand(kafkaMessage.Data, &command); err == nil {
-				err := listener.Service.RemovePersonFromGroup(&command)
-				if err != nil {
-					return
-				}
+			err := listener.Service.RemovePersonFromGroup(&command)
+			if err != nil {
+				return
 			}
 
 		case "AddClassToGroup":
-			var command dto.AddClassToGroup
-			if err := mapToCommand(kafkaMessage.Data, &command); err == nil {
-				err := listener.Service.AddClassToGroup(&command)
-				if err != nil {
-					return
-				}
+			err := listener.Service.AddClassToGroup(&command)
+			if err != nil {
+				return
 			}
 
 		case "RemoveClassFromGroup":
-			var command dto.RemoveClassFromGroup
-			if err := mapToCommand(kafkaMessage.Data, &command); err == nil {
-				err := listener.Service.RemoveClassFromGroup(&command)
-				if err != nil {
-					return
-				}
+			err := listener.Service.RemoveClassFromGroup(&command)
+			if err != nil {
+				return
 			}
 
 		default:
