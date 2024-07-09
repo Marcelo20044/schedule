@@ -21,7 +21,8 @@ func NewClassController(classService *services.ClassService, userService *servic
 }
 
 func (controller *ClassController) GetClassById(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
+	vars := mux.Vars(r)
+	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		utils.Response(w, "Invalid class ID", http.StatusBadRequest)
@@ -38,7 +39,8 @@ func (controller *ClassController) GetClassById(w http.ResponseWriter, r *http.R
 }
 
 func (controller *ClassController) GetAllClassesByPerson(w http.ResponseWriter, r *http.Request) {
-	personIdStr := r.URL.Query().Get("personId")
+	vars := mux.Vars(r)
+	personIdStr := vars["id"]
 	personId, err := strconv.Atoi(personIdStr)
 	if err != nil {
 		utils.Response(w, "Invalid person ID", http.StatusBadRequest)
@@ -97,7 +99,8 @@ func (controller *ClassController) UpdateClass(w http.ResponseWriter, r *http.Re
 }
 
 func (controller *ClassController) DeleteClass(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
+	vars := mux.Vars(r)
+	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		utils.Response(w, "Invalid class ID", http.StatusBadRequest)
