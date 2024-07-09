@@ -11,10 +11,11 @@ import (
 
 type GroupController struct {
 	Producer *kafka.Producer
+	Topic    string
 }
 
-func NewGroupController(producer *kafka.Producer) *GroupController {
-	return &GroupController{Producer: producer}
+func NewGroupController(producer *kafka.Producer, topic string) *GroupController {
+	return &GroupController{Producer: producer, Topic: topic}
 }
 
 func (controller *GroupController) SendMessageToKafka(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +26,7 @@ func (controller *GroupController) SendMessageToKafka(w http.ResponseWriter, r *
 		return
 	}
 
-	err = controller.Producer.SendMessage("groups", message)
+	err = controller.Producer.SendMessage(controller.Topic, message)
 	if err != nil {
 		utils.Response(w, fmt.Sprintf("Failed to send message to Kafka: %v", err), http.StatusInternalServerError)
 		return

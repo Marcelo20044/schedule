@@ -1,6 +1,6 @@
 package dto
 
 type GroupDto struct {
-	Id     int
-	Number string
+	Id     int    `json:"id"`
+	Number string `json:"number"`
 }

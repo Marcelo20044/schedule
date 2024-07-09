@@ -1,15 +1,11 @@
 package dto
 
-import (
-	"time"
-)
-
 type CreateClassDto struct {
-	ClassTypeId  int
-	ClassroomId  int
-	DisciplineId int
-	TeacherId    int
-	Date         time.Time
-	StartTime    time.Time
-	EndTime      time.Time
+	ClassTypeId  int        `json:"class_type_id"`
+	ClassroomId  int        `json:"classroom_id"`
+	DisciplineId int        `json:"discipline_id"`
+	TeacherId    int        `json:"teacher_id"`
+	Date         CustomDate `json:"date"`
+	StartTime    CustomTime `json:"start_time"`
+	EndTime      CustomTime `json:"end_time"`
 }

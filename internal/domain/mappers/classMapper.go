@@ -3,6 +3,7 @@ package mappers
 import (
 	"schedule/internal/domain/dto"
 	"schedule/internal/domain/models"
+	"time"
 )
 
 type ClassMapper struct {
@@ -44,9 +45,9 @@ func (mapper *ClassMapper) MapToCreateClassModel(class *dto.CreateClassDto) *mod
 		ClassroomId:  class.ClassroomId,
 		DisciplineId: class.DisciplineId,
 		TeacherId:    class.TeacherId,
-		Date:         class.Date,
-		StartTime:    class.StartTime,
-		EndTime:      class.EndTime,
+		Date:         time.Time(class.Date),
+		StartTime:    time.Time(class.StartTime),
+		EndTime:      time.Time(class.EndTime),
 	}
 }
 
@@ -57,8 +58,8 @@ func (mapper *ClassMapper) MapToUpdateClassModel(class *dto.UpdateClassDto) *mod
 		ClassroomId:  class.ClassroomId,
 		DisciplineId: class.DisciplineId,
 		TeacherId:    class.TeacherId,
-		Date:         class.Date,
-		StartTime:    class.StartTime,
-		EndTime:      class.EndTime,
+		Date:         time.Time(class.Date),
+		StartTime:    time.Time(class.StartTime),
+		EndTime:      time.Time(class.EndTime),
 	}
 }

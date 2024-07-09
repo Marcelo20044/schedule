@@ -11,5 +11,5 @@ func NewClassNotFoundError(id int) *ClassNotFoundError {
 }
 
 func (e *ClassNotFoundError) Error() string {
-	return fmt.Sprintf("Нет пары с id: %d", e.Id)
+	return fmt.Sprintf("No pairs with id: %d", e.Id)
 }

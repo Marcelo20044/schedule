@@ -51,7 +51,7 @@ func (controller *ClassController) GetAllClassesByPerson(w http.ResponseWriter, 
 	roles := r.Context().Value("roles").([]string)
 
 	if !controller.isAuthorized(username, personId, roles) {
-		utils.Response(w, "Недостаточно прав", http.StatusUnauthorized)
+		utils.Response(w, "You have no access", http.StatusUnauthorized)
 		return
 	}
 
