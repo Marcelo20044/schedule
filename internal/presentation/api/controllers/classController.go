@@ -7,15 +7,17 @@ import (
 	"schedule/internal/domain/dto"
 	"schedule/internal/domain/services"
 	"schedule/internal/presentation/utils"
+	"schedule/middleware"
 	"strconv"
 )
 
 type ClassController struct {
-	service *services.ClassService
+	classService *services.ClassService
+	userService  *services.UserService
 }
 
-func NewClassController(classService *services.ClassService) *ClassController {
-	return &ClassController{service: classService}
+func NewClassController(classService *services.ClassService, userService *services.UserService) *ClassController {
+	return &ClassController{classService: classService, userService: userService}
 }
 
 func (controller *ClassController) GetClassById(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +29,7 @@ func (controller *ClassController) GetClassById(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	class, err := controller.service.GetClassById(id)
+	class, err := controller.classService.GetClassById(id)
 	if err != nil {
 		utils.Response(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -45,7 +47,15 @@ func (controller *ClassController) GetAllClassesByPerson(w http.ResponseWriter, 
 		return
 	}
 
-	classes, err := controller.service.GetAllClassesByPerson(personId)
+	username := r.Context().Value("username").(string)
+	roles := r.Context().Value("roles").([]string)
+
+	if !controller.isAuthorized(username, personId, roles) {
+		utils.Response(w, "Недостаточно прав", http.StatusUnauthorized)
+		return
+	}
+
+	classes, err := controller.classService.GetAllClassesByPerson(personId)
 	if err != nil {
 		utils.Response(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -62,7 +72,7 @@ func (controller *ClassController) CreateClass(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	class, err := controller.service.CreateClass(&createClassDto)
+	class, err := controller.classService.CreateClass(&createClassDto)
 	if err != nil {
 		utils.Response(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -79,7 +89,7 @@ func (controller *ClassController) UpdateClass(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	err = controller.service.UpdateClass(&classDto)
+	err = controller.classService.UpdateClass(&classDto)
 	if err != nil {
 		utils.Response(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -97,7 +107,7 @@ func (controller *ClassController) DeleteClass(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	err = controller.service.DeleteClass(id)
+	err = controller.classService.DeleteClass(id)
 	if err != nil {
 		utils.Response(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -106,24 +116,53 @@ func (controller *ClassController) DeleteClass(w http.ResponseWriter, r *http.Re
 	utils.Response(w, "Class deleted successfully", http.StatusOK)
 }
 
-func (controller *ClassController) SetupClassRoutes(router *mux.Router, classService *services.ClassService) {
-	router.HandleFunc("/classes/{id}", func(w http.ResponseWriter, r *http.Request) {
-		controller.GetClassById(w, r)
-	}).Methods("GET")
+func (controller *ClassController) isAuthorized(username string, personId int, roles []string) bool {
+	user, err := controller.userService.GetUserByUsername(username)
 
-	router.HandleFunc("/persons/{id}/classes", func(w http.ResponseWriter, r *http.Request) {
-		controller.GetAllClassesByPerson(w, r)
-	}).Methods("GET")
+	if user == nil || err != nil {
+		return false
+	}
 
-	router.HandleFunc("/classes", func(w http.ResponseWriter, r *http.Request) {
-		controller.CreateClass(w, r)
-	}).Methods("POST")
+	if user.Id == personId {
+		return true
+	}
 
-	router.HandleFunc("/classes", func(w http.ResponseWriter, r *http.Request) {
-		controller.UpdateClass(w, r)
-	}).Methods("PUT")
+	for _, role := range roles {
+		if role == "ROLE_ADMIN" {
+			return true
+		}
+	}
+	return false
+}
 
-	router.HandleFunc("/classes/{id}", func(w http.ResponseWriter, r *http.Request) {
-		controller.DeleteClass(w, r)
-	}).Methods("DELETE")
+func (controller *ClassController) SetupRoutes(router *mux.Router) {
+	router.Handle("/classes", middleware.JwtAuth(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			controller.GetClassById(w, r)
+		},
+	))).Methods("GET")
+
+	router.Handle("/persons/classes", middleware.JwtAuth(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			controller.GetAllClassesByPerson(w, r)
+		},
+	))).Methods("GET")
+
+	router.Handle("/classes", middleware.JwtAuth(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			controller.CreateClass(w, r)
+		},
+	))).Methods("POST")
+
+	router.Handle("/classes", middleware.JwtAuth(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			controller.UpdateClass(w, r)
+		},
+	))).Methods("PUT")
+
+	router.Handle("/classes", middleware.JwtAuth(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			controller.DeleteClass(w, r)
+		},
+	))).Methods("DELETE")
 }

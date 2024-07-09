@@ -1,4 +1,5 @@
 create database schedule;
+create schema schedule;
 
 create table if not exists schedule.persons
 (
@@ -74,7 +75,7 @@ create table if not exists schedule.classes
     end_time      time    not null
 );
 
-create table schedule.classes_groups
+create table if not exists schedule.classes_groups
 (
     class_id integer not null
         constraint classes_groups__classes_fk
@@ -86,4 +87,35 @@ create table schedule.classes_groups
             on delete cascade,
     constraint classes_groups_pk
         primary key (group_id, class_id)
+);
+
+create table if not exists schedule.users
+(
+    id       integer not null
+        constraint users_pk
+            primary key
+        constraint users__persons_fk
+            references schedule.persons,
+    username varchar not null,
+    password varchar not null
+);
+
+create table if not exists schedule.roles
+(
+    id   integer generated always as identity (maxvalue 999999)
+        constraint roles_pk
+            primary key,
+    name varchar not null
+);
+
+create table if not exists schedule.users_roles
+(
+    user_id integer not null
+        constraint users_roles__users_fk
+            references schedule.users,
+    role_id integer not null
+        constraint users_roles__roles_fk
+            references schedule.roles,
+    constraint users_roles_pk
+        primary key (user_id, role_id)
 );
