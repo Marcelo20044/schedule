@@ -136,13 +136,13 @@ func (controller *ClassController) isAuthorized(username string, personId int, r
 }
 
 func (controller *ClassController) SetupRoutes(router *mux.Router) {
-	router.Handle("/classes", middleware.JwtAuth(http.HandlerFunc(
+	router.Handle("/classes/{id}", middleware.JwtAuth(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			controller.GetClassById(w, r)
 		},
 	))).Methods("GET")
 
-	router.Handle("/persons/classes", middleware.JwtAuth(http.HandlerFunc(
+	router.Handle("/persons/{id}/classes", middleware.JwtAuth(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			controller.GetAllClassesByPerson(w, r)
 		},
@@ -160,7 +160,7 @@ func (controller *ClassController) SetupRoutes(router *mux.Router) {
 		},
 	))).Methods("PUT")
 
-	router.Handle("/classes", middleware.JwtAuth(http.HandlerFunc(
+	router.Handle("/classes/{id}", middleware.JwtAuth(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			controller.DeleteClass(w, r)
 		},
