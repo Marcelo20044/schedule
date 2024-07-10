@@ -5,6 +5,7 @@ import (
 )
 
 type ClassRepositoryInterface interface {
+	GetAllClasses() ([]*models.Class, error)
 	GetClassById(classId int) (*models.Class, error)
 	GetAllClassesByPerson(personId int) ([]*models.Class, error)
 	CreateClass(class *models.CreateClass) (*models.Class, error)

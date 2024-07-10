@@ -13,6 +13,40 @@ func NewClassRepository(db *sqlx.DB) *ClassRepository {
 	return &ClassRepository{Db: db}
 }
 
+func (repository *ClassRepository) GetAllClasses() ([]*models.Class, error) {
+	query := `
+	SELECT cl.id        as id,
+		   cl.date,
+		   cl.start_time,
+		   cl.end_time,
+		   ct.id        as class_typ_id,
+		   ct.name      as class_type_name,
+		   c.id         as classroom_id,
+		   c.name       as classroom_name,
+		   d.id         as discipline_id,
+		   d.name       as discipline_name,
+		   p.id   		as person_id,
+		   p.name 		as person_name
+	FROM schedule.classes cl
+			 join schedule.class_type ct on ct.id = cl.type_id
+			 join schedule.classrooms c on c.id = cl.classroom_id
+			 join schedule.disciplines d on d.id = cl.discipline_id
+			 join schedule.persons p on p.id = cl.teacher_id
+	`
+	var rawClasses []*models.RawClass
+	err := repository.Db.Select(&rawClasses, query)
+	if err != nil {
+		return nil, err
+	}
+
+	var classes []*models.Class
+	for _, rawClass := range rawClasses {
+		classes = append(classes, rawClass.MapToClass())
+	}
+
+	return classes, nil
+}
+
 func (repository *ClassRepository) GetClassById(classId int) (*models.Class, error) {
 	query := `
 	SELECT cl.id        as id,
