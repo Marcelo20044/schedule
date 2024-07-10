@@ -9,10 +9,10 @@ import (
 
 type ClassService struct {
 	Repository abstraction.ClassRepositoryInterface
-	Mapper     *mappers.ClassMapper
+	Mapper     mappers.ClassMapperInterface
 }
 
-func NewClassService(repository abstraction.ClassRepositoryInterface, mapper *mappers.ClassMapper) *ClassService {
+func NewClassService(repository abstraction.ClassRepositoryInterface, mapper mappers.ClassMapperInterface) *ClassService {
 	return &ClassService{Repository: repository, Mapper: mapper}
 }
 

@@ -5,6 +5,10 @@ import (
 	"schedule/internal/domain/models"
 )
 
+type UserMapperInterface interface {
+	MapToDto(user *models.User) *dto.UserDto
+}
+
 type UserMapper struct {
 }
 
