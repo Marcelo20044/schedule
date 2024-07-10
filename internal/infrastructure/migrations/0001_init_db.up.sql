@@ -1,4 +1,4 @@
-create database schedule;
+-- +migrate Up
 create schema schedule;
 
 create table if not exists schedule.persons
