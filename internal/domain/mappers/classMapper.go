@@ -9,6 +9,13 @@ import (
 type ClassMapper struct {
 }
 
+type ClassMapperInterface interface {
+	MapToDto(class *models.Class) *dto.ClassDto
+	MapToModel(class *dto.ClassDto) *models.Class
+	MapToCreateClassModel(class *dto.CreateClassDto) *models.CreateClass
+	MapToUpdateClassModel(class *dto.UpdateClassDto) *models.UpdateClass
+}
+
 func NewClassMapper() *ClassMapper {
 	return &ClassMapper{}
 }

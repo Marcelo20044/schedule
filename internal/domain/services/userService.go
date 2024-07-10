@@ -8,10 +8,10 @@ import (
 
 type UserService struct {
 	Repository abstraction.UserRepositoryInterface
-	Mapper     *mappers.UserMapper
+	Mapper     mappers.UserMapperInterface
 }
 
-func NewUserService(repository abstraction.UserRepositoryInterface, mapper *mappers.UserMapper) *UserService {
+func NewUserService(repository abstraction.UserRepositoryInterface, mapper mappers.UserMapperInterface) *UserService {
 	return &UserService{Repository: repository, Mapper: mapper}
 }
 
