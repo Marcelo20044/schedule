@@ -20,6 +20,23 @@ func NewClassController(classService *services.ClassService, userService *servic
 	return &ClassController{classService: classService, userService: userService}
 }
 
+func (controller *ClassController) GetAllClasses(w http.ResponseWriter, r *http.Request) {
+	roles := r.Context().Value("roles").([]string)
+
+	if !controller.isAdmin(roles) {
+		utils.Response(w, "You have no access", http.StatusUnauthorized)
+		return
+	}
+
+	classes, err := controller.classService.GetAllClasses()
+	if err != nil {
+		utils.Response(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	utils.Response(w, classes, http.StatusOK)
+}
+
 func (controller *ClassController) GetClassById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -51,7 +68,7 @@ func (controller *ClassController) GetAllClassesByPerson(w http.ResponseWriter, 
 	roles := r.Context().Value("roles").([]string)
 
 	if !controller.isAuthorized(username, personId, roles) {
-		utils.Response(w, "Недостаточно прав", http.StatusUnauthorized)
+		utils.Response(w, "You have no access", http.StatusUnauthorized)
 		return
 	}
 
@@ -117,16 +134,19 @@ func (controller *ClassController) DeleteClass(w http.ResponseWriter, r *http.Re
 }
 
 func (controller *ClassController) isAuthorized(username string, personId int, roles []string) bool {
-	user, err := controller.userService.GetUserByUsername(username)
+	if controller.isAdmin(roles) {
+		return true
+	}
 
+	user, err := controller.userService.GetUserByUsername(username)
 	if user == nil || err != nil {
 		return false
 	}
 
-	if user.Id == personId {
-		return true
-	}
+	return user.Id == personId
+}
 
+func (controller *ClassController) isAdmin(roles []string) bool {
 	for _, role := range roles {
 		if role == "ROLE_ADMIN" {
 			return true
@@ -136,6 +156,12 @@ func (controller *ClassController) isAuthorized(username string, personId int, r
 }
 
 func (controller *ClassController) SetupRoutes(router *mux.Router) {
+	router.Handle("/classes", middleware.JwtAuth(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			controller.GetAllClasses(w, r)
+		},
+	))).Methods("GET")
+
 	router.Handle("/classes/{id}", middleware.JwtAuth(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			controller.GetClassById(w, r)

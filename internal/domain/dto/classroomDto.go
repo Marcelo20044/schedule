@@ -1,6 +1,6 @@
 package dto
 
 type ClassroomDto struct {
-	Id   int
-	Name string
+	Id   int    `json:"id"`
+	Name string `json:"name"`
 }
