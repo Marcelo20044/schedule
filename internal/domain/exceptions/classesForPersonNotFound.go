@@ -1,5 +1,7 @@
 package exceptions
 
+import "fmt"
+
 type ClassesForPersonNotFoundError struct {
 	PersonId int
 }
@@ -9,5 +11,5 @@ func NewClassesForPersonNotFoundError(personId int) *ClassesForPersonNotFoundErr
 }
 
 func (e *ClassesForPersonNotFoundError) Error() string {
-	return "У вас нет пар"
+	return fmt.Sprintf("No pairs for person: %d", e.PersonId)
 }

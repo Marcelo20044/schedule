@@ -16,6 +16,17 @@ func NewClassService(repository abstraction.ClassRepositoryInterface, mapper *ma
 	return &ClassService{Repository: repository, Mapper: mapper}
 }
 
+func (service *ClassService) GetAllClasses() ([]*dto.FormattedClassDto, error) {
+	classes, err := service.Repository.GetAllClasses()
+
+	classDto := make([]*dto.FormattedClassDto, len(classes))
+	for i, class := range classes {
+		classDto[i] = service.Mapper.MapToDto(class).FormatTime()
+	}
+
+	return classDto, err
+}
+
 func (service *ClassService) GetClassById(id int) (*dto.FormattedClassDto, error) {
 	class, err := service.Repository.GetClassById(id)
 
