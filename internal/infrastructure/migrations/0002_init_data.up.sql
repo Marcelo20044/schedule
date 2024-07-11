@@ -1,3 +1,5 @@
+-- +migrate Up
+
 INSERT INTO schedule.class_type (name) VALUES ('Лекция');
 INSERT INTO schedule.class_type (name) VALUES ('Практика');
 INSERT INTO schedule.class_type (name) VALUES ('Лабораторная');

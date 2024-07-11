@@ -1,7 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	"log"
@@ -33,6 +37,12 @@ func Init() {
 	consumer, producer, err := initKafka(brokers, 2*time.Minute)
 	if err != nil {
 		log.Fatalf("Failed to initialize Kafka: %v", err)
+	}
+
+	// Migrations
+	err = applyMigrations(cfg)
+	if err != nil {
+		log.Fatalln(err)
 	}
 
 	// Init db
@@ -89,4 +99,43 @@ func initKafka(brokers []string, timeout time.Duration) (*kafka.Consumer, *kafka
 	}
 
 	return nil, nil, fmt.Errorf("timed out waiting for Kafka to be ready")
+}
+
+func applyMigrations(cfg *config.Config) error {
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/postgres?sslmode=disable", cfg.Db.User, cfg.Db.Password, cfg.Server.Host, cfg.Db.Port)
+
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return fmt.Errorf("failed to connect to database: %v", err)
+	}
+	defer db.Close()
+
+	if _, err := db.Exec(fmt.Sprintf("CREATE DATABASE %s", cfg.Db.DbName)); err != nil {
+		log.Printf("Database %s already exists: %v", cfg.Db.DbName, err)
+	}
+
+	db.Close()
+
+	db, err = sql.Open("postgres", dsn)
+	if err != nil {
+		return fmt.Errorf("failed to connect to database: %v", err)
+	}
+	defer db.Close()
+
+	// Настраиваем путь к миграциям и DSN для библиотеки golang-migrate
+	m, err := migrate.New(
+		"file://internal/infrastructure/migrations",
+		fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", cfg.Db.User, cfg.Db.Password, cfg.Server.Host, cfg.Db.Port, cfg.Db.DbName),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to initialize migrate instance: %v", err)
+	}
+
+	// Применяем миграции
+	err = m.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		return fmt.Errorf("failed to apply migrations: %v", err)
+	}
+
+	return nil
 }
